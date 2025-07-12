@@ -1,6 +1,6 @@
 # Welcome to your Lovable project
 
-Guys download the zip and inside folder run 2 cmd's one for node index and npm run dev for front end , before doing this just type npm i for dependecies installation 
+Guys download the zip and inside folder run 2 cmd's one for node index and npm run dev for front end , before doing this just type npm i for dependecies installation  and any changes req info in grp and create branch and push it 
 
 ## Project info
 
