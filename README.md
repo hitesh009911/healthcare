@@ -1,5 +1,7 @@
 # Welcome to your Lovable project
 
+Guys download the zip and inside folder run 2 cmd's one for node index and npm run dev for front end , before doing this just type npm i for dependecies installation 
+
 ## Project info
 
 **URL**: https://lovable.dev/projects/d66e7ad3-33f5-4870-83dd-4d574b873f2e
