@@ -55,6 +55,9 @@ const Dashboard = () => {
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [newDate, setNewDate] = useState("");
   const [newStatus, setNewStatus] = useState("");
+  const [newTime, setNewTime] = useState("");
+  const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+  const [tests, setTests] = useState<any[]>([]);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [appointmentToDelete, setAppointmentToDelete] = useState<string | null>(null);
@@ -66,6 +69,22 @@ const Dashboard = () => {
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewEditMode, setReviewEditMode] = useState(false);
+
+  const fetchTests = async (token: string) => {
+    try {
+      const response = await fetch('/api/diagnostic-tests', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setTests(Array.isArray(data.tests) ? data.tests : []);
+      }
+    } catch (error) {
+      // ignore
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -83,6 +102,7 @@ const Dashboard = () => {
     console.log('Dashboard: User found:', user);
     setUser(user);
     fetchAppointments(token);
+    fetchTests(token);
   }, [navigate]);
 
   const fetchAppointments = async (token: string) => {
@@ -117,6 +137,23 @@ const Dashboard = () => {
     setEditingAppointment(appointment);
     setNewDate(appointment.appointmentDate.split('T')[0]);
     setNewStatus(appointment.status);
+    setNewTime(appointment.appointmentDate.split('T')[1]?.slice(0,5) || "");
+    // Find the test for this appointment
+    let test = null;
+    if (appointment.testId && (appointment.testId as any)._id) {
+      test = tests.find(t => t._id === (appointment.testId as any)._id);
+    } else if (appointment.testId && appointment.testId.name) {
+      test = tests.find(t => t.name === appointment.testId.name);
+    }
+    if (test && Array.isArray(test.scheduledTimes) && test.scheduledTimes.length > 0) {
+      setAvailableTimes(test.scheduledTimes);
+    } else {
+      setAvailableTimes([
+        "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+        "12:00", "12:30", "14:00", "14:30", "15:00", "15:30",
+        "16:00", "16:30", "17:00", "17:30"
+      ]);
+    }
     setIsEditDialogOpen(true);
   };
 
@@ -137,6 +174,7 @@ const Dashboard = () => {
         body: JSON.stringify({
           status: newStatus,
           appointmentDate: newDate,
+          appointmentTime: newTime,
         }),
       });
 
@@ -504,6 +542,21 @@ const Dashboard = () => {
                   />
                 </PopoverContent>
               </Popover>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="time" className="text-right">
+                Time
+              </Label>
+              <Select value={newTime} onValueChange={setNewTime}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select time" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTimes.map((slot) => (
+                    <SelectItem key={slot} value={slot}>{slot}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="status" className="text-right">
